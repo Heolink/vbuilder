@@ -1,0 +1,8 @@
+### Install nodejs / npm
+cd /home/vagrant
+wget http://nodejs.org/dist/v0.12.4/node-v0.12.4-linux-x64.tar.gz
+tar -xvf node-v0.12.4-linux-x64.tar.gz
+sudo mv node-v0.12.4-linux-x64 /opt/nodejs
+sudo ln -s /opt/nodejs/bin/node /usr/local/bin/node
+sudo ln -s /opt/nodejs/bin/npm /usr/local/bin/npm
+sudo rm node-v0.12.4-linux-x64.tar.gz

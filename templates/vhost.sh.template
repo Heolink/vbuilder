@@ -1,0 +1,55 @@
+sudo apt-get install apache2-mpm-itk -y
+
+user=vagrant
+host=###HOST###
+fileConf="$host.conf"
+folderWeb="/home/$user/public_html"
+folderLogs="/home/$user/logs"
+publicWeb="$folderWeb/###PUBLICWEB###"
+vhostFile="/etc/apache2/sites-available/$fileConf"
+
+if [ ! -d $folderLogs ]
+then
+    sudo -u vagrant mkdir $folderLogs
+    #chown $user:$user $folderLogs
+    #chmod 755 $folderLogs
+    sudo -u vagrant touch "$folderLogs/error.log"
+    sudo -u vagrant touch "$folderLogs/access.log"
+fi
+
+
+cat > $vhostFile  <<EOF
+<VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+    ServerName $host
+    DocumentRoot $publicWeb
+
+    <IfModule mpm_itk_module>
+        AssignUserId $user $user
+    </IfModule>
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride All
+    </Directory>
+    <Directory $publicWeb>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        Require all granted
+    </Directory>
+    ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+    <Directory "/usr/lib/cgi-bin">
+        AllowOverride None
+        Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+        Require all granted
+    </Directory>
+    ErrorLog /home/$user/logs/error.log
+    # Possible values include: debug, info, notice, warn, error, crit,
+    # alert, emerg.
+    LogLevel warn
+    CustomLog /home/$user/logs/access.log combined
+</VirtualHost>
+EOF
+
+sudo a2ensite $fileConf
+
+sudo service apache2 restart
