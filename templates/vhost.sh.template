@@ -17,6 +17,11 @@ then
     sudo -u vagrant touch "$folderLogs/access.log"
 fi
 
+if [ ! -d $publicWeb ]
+then
+    sudo -u vagrant mkdir -p $publicWeb
+fi
+
 
 cat > $vhostFile  <<EOF
 <VirtualHost *:80>

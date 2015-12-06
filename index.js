@@ -19,16 +19,27 @@ var cli = commandLineArgs([
     { name: 'vhost', type: String, defaultOption: true },
     { name: 'ip', type: String, defaultValue: '192.168.89.29' },
     { name: 'box', type: String, defaultValue: 'ubuntu/trusty64'},
-    { name: 'mysql', alias: 'm', type: Boolean, defaultValue: true},
-    { name: 'composer', alias: 'c', type: Boolean, defaultValue: true},
-    { name: 'node', type: Boolean, defaultValue: true},
-    { name: 'redis', type: Boolean, defaultValue: true},
-    { name: 'git', type: Boolean, defaultValue: true},
-    { name: 'bower', type: Boolean, defaultValue: true},
-    { name: 'gulp', type: Boolean, defaultValue: true},
+    { name: 'mysql', alias: 'm', type: Boolean, defaultValue: false},
+    { name: 'all', type: Boolean, defaultValue: false},
+    { name: 'composer', alias: 'c', type: Boolean, defaultValue: false},
+    { name: 'node', type: Boolean, defaultValue: false},
+    { name: 'redis', type: Boolean, defaultValue: false},
+    { name: 'git', type: Boolean, defaultValue: false},
+    { name: 'bower', type: Boolean, defaultValue: false},
+    { name: 'gulp', type: Boolean, defaultValue: false},
 ])
 var options = cli.parse()
 var currentPath = process.cwd();
+
+var verbose = function(string)
+{
+    if( options.verbose ) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        console.info( '[INFO] ' + string.yellow, args );
+    }
+}
+
+verbose('Start process, options : ', options);
 
 if( !options.hasOwnProperty('vhost') || !options.vhost ) {
     return console.error('[ERROR] vhost require'.red);
@@ -53,12 +64,30 @@ var fileVhost = __dirname + '/templates/vhost.sh.template';
 var fileVagrant = __dirname + '/templates/Vagrantfile.template';
 var processFunction = [];
 
+if( options.all ) {
+    for( var k in options ) {
+        if( k == 'verbose' ) {
+            continue;
+        }
+        if( options[k] === false ) {
+            options[k] = true;
+        }
+    }
+}
+
+if( options.gulp || options.bower ) {
+    verbose('Set node to true');
+    options.node = true;
+}
+
+verbose('Read file bootstrap');
 fs.readFile(fileBootstrap, 'utf8', function (err,bootstrap) {
     if (err) {
         return console.log('[ERROR]' + err.red);
     }
 
     if( options.composer ) {
+        verbose('composer set to true');
         var composerProcess = function(callback)
         {
             fs.readFile(fileComposer, 'utf8', function (err, composer) {
@@ -72,6 +101,7 @@ fs.readFile(fileBootstrap, 'utf8', function (err,bootstrap) {
     }
 
     if( options.redis ) {
+        verbose('redis set to true');
         var redisProcess = function(callback)
         {
             fs.readFile(fileRedis, 'utf8', function (err, redis) {
@@ -84,8 +114,8 @@ fs.readFile(fileBootstrap, 'utf8', function (err,bootstrap) {
         processFunction.push(redisProcess);
     }
 
-
     if( options.node ) {
+        verbose('node set to true');
         var nodeProcess = function(callback)
         {
             fs.readFile(fileNode, 'utf8', function (err, node) {
@@ -98,6 +128,7 @@ fs.readFile(fileBootstrap, 'utf8', function (err,bootstrap) {
         processFunction.push(nodeProcess);
 
         if( options.gulp ) {
+            verbose('gulp set to true');
             var gulpProcess = function(callback)
             {
                 fs.readFile(fileGulp, 'utf8', function (err, gulp) {
@@ -111,6 +142,7 @@ fs.readFile(fileBootstrap, 'utf8', function (err,bootstrap) {
         }
 
         if( options.bower ) {
+            verbose('bower set to true');
             var bowerProcess = function(callback)
             {
                 fs.readFile(fileBower, 'utf8', function (err, bower) {
@@ -126,7 +158,7 @@ fs.readFile(fileBootstrap, 'utf8', function (err,bootstrap) {
     }
 
     if( options.mysql ) {
-
+        verbose('mysql set to true');
         var mysqlProcess = function(callback)
         {
             fs.readFile(fileMysql, 'utf8', function (err, mysql) {
