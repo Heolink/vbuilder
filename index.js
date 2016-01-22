@@ -6,6 +6,7 @@ var app = require('./lib/app');
 var defaultIp = '192.168.89.29';
 var defaultBox = 'ubuntu/trusty64';
 
+console.log( 'ok' );
 
 program
     .version('1.0.0')
